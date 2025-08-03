@@ -19,3 +19,11 @@ for i in range(3):
         requests.post(NF_LOGIN_URL, json=payload, verify=False, timeout=2)
     except requests.exceptions.RequestException:
         pass
+
+#Teste 2: Simular acesso com token inválido
+print("[*] Simular acesso a recurso protegido com token inválido...")
+invalid_token_headers = {"Authorization": "Bearer INVALID_TOKEN"}
+try:
+    requests.get(NF_PROTECTED_URL, headers=invalid_token_headers, verify=False, timeout=2)
+except requests.exceptions.RequestException:
+    pass
