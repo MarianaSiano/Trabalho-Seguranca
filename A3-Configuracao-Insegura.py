@@ -25,7 +25,6 @@ def test_infra_config():
             print("[!!!] VULNERABILIDADE DE IMAGEM DETECTADA! Veja o log do Trivy para detalhes.")
         else:
             print("[+] Nenhuma vulnerabilidade crítica encontrada na imagem do contêiner.")
-
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"[-] Erro ao executar Trivy. Verifique se a ferramenta está instalada: {e}")
     except Exception as e:
@@ -43,7 +42,6 @@ def test_infra_config():
             print("[!!!] VULNERABILIDADE DETECTADA: O pod tem acesso total à rede do host.")
         if "allowPrivilegeEscalation: true" in result.stdout:
             print("[!!!] VULNERABILIDADE DETECTADA: O pod permite escalação de privilégios.")
-
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"[-] Erro ao executar kubectl. Verifique se o pod e o namespace existem: {e}")
     except Exception as e:

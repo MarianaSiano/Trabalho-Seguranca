@@ -2,38 +2,37 @@ import requests
 import urllib3
 import time
 
+#--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
+NF_CONFIG = {
+    "NRF_IP": "127.0.0.1",
+    "NRF_PORT": 29510
+}
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#Configurações do teste
-NF_LOGIN_URL = "https://127.0.0.1:8000/auth/login"
-NF_PROTECTED_URL = "https://127.0.0.1:29510/api/secure_resource"
-NF_INVALID_URL = "https://127.0.0.1:29510/api/invalid_endpoit"
-
-print("[+] Simulando eventos de segurança para teste de logging...")
-
-#Teste 1: Simular tentativas de login falhas
-for i in range(3):
-    payload = {"username": "admin", "password": f"wrong_password_{i}"}
-    print(f"[*] Tentativa de login falha #{i+1}...")
+def test_logging():
+    print("=" * 50)
+    print("A8: Testando Monitoramento e Logging Insuficientes")
+    print("=" * 50)
+    
+    nf_invalid_url = f"https://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/api/invalid_endpoint"
+    print("[*] Simulando eventos de segurança. Verifique os logs da NF agora!")
+    
     try:
-        requests.post(NF_LOGIN_URL, json=payload, verify=False, timeout=2)
-    except requests.exceptions.RequestException:
-        pass
+        #Simular tentativas de login falhas (exemplo conceitual)
+        for _ in range(3):
+            requests.post(f"https://{NF_CONFIG['NRF_IP']}:8000/auth/login", json={"user":"admin", "pass":"bad_pass"}, verify=False, timeout=2)
+        
+        #Simular acesso a endpoint inválido
+        requests.get(nf_invalid_url, verify=False, timeout=2)
+        
+        #Simular negação de serviço leve
+        for i in range(10):
+            requests.post(nf_invalid_url, json={}, verify=False, timeout=0.1)
+        
+        print("[+] Simulação concluída. O resultado depende da sua análise manual dos logs.")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro durante a simulação de eventos: {e}")
 
-#Teste 2: Simular acesso com token inválido
-print("[*] Simular acesso a recurso protegido com token inválido...")
-invalid_token_headers = {"Authorization": "Bearer INVALID_TOKEN"}
-try:
-    requests.get(NF_PROTECTED_URL, headers=invalid_token_headers, verify=False, timeout=2)
-except requests.exceptions.RequestException:
-    pass
-
-#Teste 3: Simular requisições malformadas ou para endpoints inválidos
-print("[*] Simular requisições para endpoit inválido...")
-try:
-    requests.post(NF_INVALID_URL, json={}, verify=False, timeout=2)
-except requests.exceptions.RequestException:
-    pass
-
-print("=" * 50)
-print("[+] Simulação de ataques concluída. Verifica os logs da NF agora!")
+if __name__ == "__main__":
+    test_logging()

