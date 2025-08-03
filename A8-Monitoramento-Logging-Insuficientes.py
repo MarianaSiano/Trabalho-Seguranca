@@ -27,3 +27,13 @@ try:
     requests.get(NF_PROTECTED_URL, headers=invalid_token_headers, verify=False, timeout=2)
 except requests.exceptions.RequestException:
     pass
+
+#Teste 3: Simular requisições malformadas ou para endpoints inválidos
+print("[*] Simular requisições para endpoit inválido...")
+try:
+    requests.post(NF_INVALID_URL, json={}, verify=False, timeout=2)
+except requests.exceptions.RequestException:
+    pass
+
+print("=" * 50)
+print("[+] Simulação de ataques concluída. Verifica os logs da NF agora!")
