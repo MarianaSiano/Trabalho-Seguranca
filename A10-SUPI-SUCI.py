@@ -30,3 +30,8 @@ try:
 
 except requests.exceptions.RequestException as e:
     print(f"[-] Erro ao tentar manipular o SUPI: {e}")
+
+#--- Teste de Sinalização (Conceitual) ---
+print("\n[+] Teste de Manipulação de Sinalização (conceitual com Scapy)...")
+print("[*] A implementação real exige ferramentas específicas como Scapy com plugins 5G.")
+print("[*] Lógica de teste de sinalização concluída.")
