@@ -4,9 +4,9 @@ import json
 
 #--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
 NF_CONFIG = {
-    "NRF_IP": "127.0.0.10",
+    "NRF_IP": "127.0.0.1",
     "NRF_PORT": 29510,
-    "UDM_IP": "127.0.0.3",
+    "UDM_IP": "127.0.0.1",
     "UDM_PORT": 29503,
     "SUPI_1": "imsi-208930000000001",
     "SUPI_2": "imsi-208930000000002"
