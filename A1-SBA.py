@@ -6,7 +6,7 @@ import time
 #--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
 NF_CONFIG = {
     "UDM_IP": "127.0.0.3",
-    "UDM_PORT": 8000,
+    "UDM_PORT": 29503,
     "NEF_IP": "127.0.0.1",
     "NEF_PORT": 29509,
     "SUPI_1": "imsi-208930000000001"
