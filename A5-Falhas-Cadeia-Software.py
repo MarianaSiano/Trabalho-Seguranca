@@ -4,11 +4,11 @@ import os
 
 def test_supply_chain():
     print("=" * 50)
-    print("A5: Testando Falhas na Cadeia de Suprimentos (Análise de Diretório)")
+    print("A5 - Testando Falhas na Cadeia de Suprimentos (Análise de Diretório)")
     print("=" * 50)
 
-    #Assumimos que o código-fonte está em `~/free5gc/`
-    free5gc_dir = os.path.expanduser("~/free5gc")
+    #Caminho do diretório do Free5GC
+    free5gc_dir = os.path.expanduser("~/go/pkg/mod/github.com/free5gc")
     if not os.path.isdir(free5gc_dir):
         print(f"[-] O diretório {free5gc_dir} não existe. Verifique o caminho.")
         return
