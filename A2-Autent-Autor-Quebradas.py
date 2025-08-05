@@ -15,3 +15,15 @@ NF_CONFIG = {
 UDM_API_URL_BASE = f"http://{NF_CONFIG['UDM_IP']}:{NF_CONFIG['UDM_PORT']}/nudm-uecm/v1/ues"
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+def get_access_token():
+    auth_url = f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/nnrf-nfm/v1/oauth2/token"
+    auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    auth_data = "grant_type=client_credentials&client_id=NSSF"
+    try:
+        response = requests.post(auth_url, headers=auth_headers, data=auth_data, timeout=5)
+        response.raise_for_status()
+        return response.json().get("access_token")
+    except (requests.exceptions.RequestException, KeyError) as e:
+        print(f"[-] Erro ao obter token de acesso: {e}")
+        return None
