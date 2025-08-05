@@ -28,3 +28,42 @@ def get_access_token():
         return response.json().get("access_token")
     except (requests.exceptions.RequestException, KeyError) as e:
         return None
+
+def test_network_slicing():
+    print("=" * 50)
+    print("A7 - Testando Falhas de Segmentação de Rede (Network Slicing)")
+    print("=" * 50)
+
+    #Exemplo com IPs diferentes, mas no mesmo host de loopback para simular slices.
+    slice_a_ip = NF_CONFIG['NRF_IP']
+    slice_b_ip = NF_CONFIG['UDM_IP']
+    slice_b_port = NF_CONFIG['UDM_PORT']
+
+    #Teste de conectividade a nível de rede (Socket)
+    try:
+        socket.create_connection((slice_b_ip, slice_b_port), timeout=3).close()
+        print(f"[!!!] VULNERABILIDADE DETECTADA: Um host na Slice A pode se conectar à Slice B.")
+    except (socket.timeout, socket.error):
+        print("[+] Conexão TCP para a Slice B falhou. A segmentação de rede parece correta.")
+
+    #Teste de bypass de autorização
+    token = get_access_token()
+    if not token:
+        print("[-] Não foi possível obter o token para o teste de bypass")
+        return
+    headers = {"Authorization": f"Bearer {token}"}
+    other_supi_url = f"{UDM_API_URL_BASE}/imsi-{NF_CONFIG['SUPI_2']}/authentications"
+    
+    try:
+        response = requests.get(other_supi_url, headers=headers, verify=False, timeout=5)
+        if response.status_code in [200, 201]:
+            print("[!!!] VULNERABILIDADE DETECTADA: Bypass de autorização inter-slice!")
+        elif response.status_code in [401, 403]:
+            print("[+] Bypass de autorização falhou (acesso negado).")
+        else:
+            print(f"[-] Resposta inesperada. Status: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro ao tentar acessar a API da Slice B: {e}")
+
+if __name__ == "__main__":
+    test_network_slicing()
