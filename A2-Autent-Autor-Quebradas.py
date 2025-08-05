@@ -2,7 +2,7 @@ import requests
 import urllib3
 import json
 
-#--- Configurações de Ambiente (Valores do seu nrfcfg.yaml e udmcfg.yaml) ---
+#--- Configurações de Ambiente (Valores do nrfcfg.yaml e udmcfg.yaml) ---
 NF_CONFIG = {
     "NRF_IP": "127.0.0.10",
     "NRF_PORT": 8000,
@@ -27,3 +27,32 @@ def get_access_token():
     except (requests.exceptions.RequestException, KeyError) as e:
         print(f"[-] Erro ao obter token de acesso: {e}")
         return None
+
+def test_bola():
+    print("=" * 50)
+    print("A2 - Testando Autenticação e Autorização Quebradas (BOLA)")
+    print("=" * 50)
+
+    token = get_access_token()
+    if not token:
+        print("[-] Não foi possível obter o token, o teste não pode continuar.")
+        return
+
+    headers = {"Authorization": f"Bearer {token}"}
+    other_supi = NF_CONFIG['SUPI_2']
+
+    try:
+        response_other = requests.get(f"{UDM_API_URL_BASE}/imsi-{other_supi}/authentications", headers=headers, timeout=5)
+        
+        if response_other.status_code in [200, 201]:
+            print("[!!!] VULNERABILIDADE DETECTADA: Broken Object Level Authorization!")
+            print("      O token acessa dados de outro SUPI.")
+        elif response_other.status_code in [401, 402]:
+            print("[+] Acesso negado. A API está protegida corretamente.")
+        else:
+            print(f"[-] Erro inesperado na requisição maliciosa. Status: {response_other.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"[-] Erro ao se conectar à API para teste BOLA: {e}")
+
+if __name__ == "__main__":
+    test_bola()
