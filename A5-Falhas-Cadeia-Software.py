@@ -14,7 +14,7 @@ def test_supply_chain():
         return
 
     try:
-        print(f"[*] Analisando o diretório '{'Downloads/free5gc_dir'}' com Trivy...")
+        print(f"[*] Analisando o diretório '{free5gc_dir}' com Trivy...")
         trivy_command = ["trivy", "fs", "-f", "json", "--scanners", "vuln", free5gc_dir]
         result = subprocess.run(trivy_command, capture_output=True, text=True, check=True, timeout=300)
         scan_results = json.loads(result.stdout)
