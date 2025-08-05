@@ -18,7 +18,7 @@ def test_infra_config():
     #Teste de imagem de contêiner com Trivy
     try:
         print(f"[*] Escaneando a imagem '{NF_CONFIG['IMAGE_AMF']}' com Trivy...")
-        result = subprocess.run(["trivy", "image", "-f", "json", NF_CONFIG['IMAGE_AMF']], capture_output=True, text=True, check=True, timeout=120)
+        result = subprocess.run(["trivy", "image", "-f", "json5", NF_CONFIG['IMAGE_AMF']], capture_output=True, text=True, check=True, timeout=120)
         scan_results = json.loads(result.stdout)
         
         if any(res.get("Vulnerabilities") for res in scan_results.get("Results", [])):
