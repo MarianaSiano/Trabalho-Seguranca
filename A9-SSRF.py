@@ -19,7 +19,7 @@ def test_ssrf():
     target_param = "url"
 
     test_endpoints = [
-        "http://127.0.0.1:8000",
+        "http://127.0.0.10:8000",
         "http://169.254.169.254/latest/meta-data"
     ]
     
