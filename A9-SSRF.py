@@ -5,8 +5,8 @@ import time
 
 #--- Configurações de Ambiente (Valores Padrão do Free5GC) ---
 NF_CONFIG = {
-    "NEF_IP": "127.0.0.1",
-    "NEF_PORT": 29509
+    "UDM_IP": "127.0.0.3",
+    "UDM_PORT": 29503
 }
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -15,11 +15,11 @@ def test_ssrf():
     print("A9: Testando Server-Side Request Forgery (SSRF)")
     print("=" * 50)
 
-    nf_api_url = f"https://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/api/resource_loader" # Endpoint de exemplo
+    nf_api_url = f"https://{NF_CONFIG['UDM_IP']}:{NF_CONFIG['UDM_PORT']}/api/resource_loader" # Endpoint de exemplo
     target_param = "url"
 
     test_endpoints = [
-        "http://127.0.0.1:80",
+        "http://127.0.0.1:8000",
         "http://169.254.169.254/latest/meta-data"
     ]
     
