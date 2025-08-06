@@ -2,7 +2,7 @@ import requests
 import urllib3
 import json
 
-#--- Configurações de Ambiente (Valores do nrfcfg.yaml e udmcfg.yaml) ---
+#--- Configurações de Ambiente (Valores do nrfcfg.yaml) ---
 NF_CONFIG = {
     "NRF_IP": "127.0.0.10",
     "NRF_PORT": 8000,
@@ -34,7 +34,7 @@ def test_supi_manipulation():
 
     token = get_access_token()
     if not token:
-        print("[-] Não foi possível obter o token para o teste.")
+        print("[-] Não foi possível obter o token para o teste")
         return
 
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
@@ -47,12 +47,12 @@ def test_supi_manipulation():
         if response.status_code == 204:
             print("[!!!] VULNERABILIDADE DETECTADA: Manipulação de SUPI bem-sucedida!")
         elif response.status_code in [401, 403]:
-            print("[+] Manipulação de SUPI falhou. Acesso negado.")
+            print("[+] Manipulação de SUPI falhou. Acesso foi negado.")
         else:
             print(f"[-] Resposta inesperada. Status: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"[-] Erro ao tentar manipular o SUPI: {e}")
-
+    
     print("\n[+] Teste de Sinalização (Conceitual)")
     print("[*] A implementação real de manipulação de sinalização exige ferramentas específicas como Scapy com plugins 5G.")
 

