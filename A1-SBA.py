@@ -4,7 +4,8 @@ import json
 import time
 import subprocess
 
-#--- Configurações de Ambiente (Valores Padrão do Free5GC v3.4.3) ---
+#--- Configutações de Ambiente (Valores Padrão do Free5GC v3.4.3)
+#Usando IPs de loopback específicos da sua configuração para testes internos
 NF_CONFIG = {
     "UDM_IP": "127.0.0.3",
     "UDM_PORT": 8000,
@@ -13,10 +14,8 @@ NF_CONFIG = {
     "SUPI_1": "imsi-208930000000001"
 }
 
-#Desabilitar avisos de certificados autoassinados
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-#--- Teste de SQL Injection (Boolean-based blind) ---
 def test_sql_injection():
     print("=" * 50)
     print("A1 - Testando SQL Injection em APIs (SBA)")
@@ -41,8 +40,9 @@ def test_sql_injection():
 
 def test_command_injection():
     print("\n" + "=" * 50)
-    print("A1: Testando Command Injection em APIs (SBA)")
+    print("A1 - Testando Command Injection em APIs (SBA)")
     print("=" * 50)
+
     nf_mgmt_url = f"http://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/management/ping"
     target_cmd_param = "host"
     headers = {"Content-Type": "application/json"}
@@ -56,6 +56,7 @@ def test_command_injection():
                 return
         except requests.exceptions.RequestException:
             pass
+    print("[-] Command Injection não detectada")
 
 if __name__ == "__main__":
     test_sql_injection()
