@@ -2,16 +2,33 @@ import subprocess
 import json
 import os
 
+#--- Configurações de Ambiente
+#Imagem e pod do AMF
 NF_CONFIG = {
     "IMAGE_AMF": "free5gc/amf:v1.2.5",
-    "K8S_NAMESPACE": "free5gc",
+    "K8S_NAMESPACE":"free5gc",
     "K8S_POD_AMF": "amf-0"
 }
 
-def test_infra_conf():
+def test_infra_config():
     print("=" * 50)
     print("A3: Testando Configuração Insegura da Infraestrutura (Kubernetes/Trivy)")
     print("=" * 50)
+
+    try:
+        print(f"[*] Escaneando a imagem '{NF_CONFIG['IMAGE_AMF']}' com Trivy...")
+        trivy_command = ["trivy", "image", "-f", "json", NF_CONFIG['IMAGE_AMF']]
+        result = subprocess.run(trivy_command, capture_output=True, text=True, check=True, timeout=120)
+        scan_results = json.loads(result.stdout)
+        
+        if any(res.get("Vulnerabilities") for res in scan_results.get("Results", [])):
+            print("[!!!] VULNERABILIDADE DE IMAGEM DETECTADA! Veja o log do Trivy para detalhes.")
+        else:
+            print("[+] Nenhuma vulnerabilidade crítica encontrada na imagem do contêiner.")
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        print(f"[-] Erro ao executar Trivy. Verifique se a ferramenta está instalada: {e}")
+    except Exception as e:
+        print(f"[-] Erro inesperado no teste A3: {e}")
 
     try:
         print(f"\n[*] Verificando configurações inseguras do pod '{NF_CONFIG['K8S_POD_AMF']}'...")
@@ -30,4 +47,4 @@ def test_infra_conf():
         print(f"[-] Erro inesperado no teste A3: {e}")
 
 if __name__ == "__main__":
-    test_infra_conf()
+    test_infra_config()
