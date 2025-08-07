@@ -2,17 +2,16 @@ import subprocess
 import json
 import os
 
-#--- Configurações de Ambiente
-#Imagem e pod do AMF
+#--- Configurações de Ambiente ---
 NF_CONFIG = {
     "IMAGE_AMF": "free5gc/amf:v1.2.5",
-    "K8S_NAMESPACE":"free5gc",
+    "K8S_NAMESPACE": "free5gc",
     "K8S_POD_AMF": "amf-0"
 }
 
 def test_infra_config():
     print("=" * 50)
-    print("A3: Testando Configuração Insegura da Infraestrutura (Kubernetes/Trivy)")
+    print("A3: Testando Falhas de Configuração de Segurança")
     print("=" * 50)
 
     try:
