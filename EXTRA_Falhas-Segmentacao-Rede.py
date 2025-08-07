@@ -31,7 +31,7 @@ def get_access_token():
 
 def test_network_slicing():
     print("=" * 50)
-    print("A7 - Testando Falhas de Segmentação de Rede (Network Slicing)")
+    print("EXTRA - Testando Falhas de Segmentação de Rede (Network Slicing)")
     print("=" * 50)
 
     #Exemplo com IPs diferentes, mas no mesmo host de loopback para simular slices.
