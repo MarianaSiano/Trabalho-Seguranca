@@ -2,7 +2,7 @@ import requests
 import urllib3
 import json
 
-#--- Configurações de Ambiente (Valores do nrfcfg.yaml) ---
+#--- Configurações de Ambiente (Valores da sua configuração) ---
 NF_CONFIG = {
     "NRF_IP": "127.0.0.10",
     "NRF_PORT": 8000,
@@ -27,21 +27,21 @@ def get_access_token():
     except (requests.exceptions.RequestException, KeyError) as e:
         return None
 
-def test_supi_manipulation():
+def test_data_integrity():
     print("=" * 50)
-    print("A10 - Testando Manipulação de Identidade e Sinalização")
+    print("A10: Testando Falhas de Integridade de Dados e Falsificação")
     print("=" * 50)
-
+    
     token = get_access_token()
     if not token:
-        print("[-] Não foi possível obter o token para o teste")
+        print("[-] Não foi possível obter o token para o teste.")
         return
-
+        
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     target_supi = NF_CONFIG['SUPI_2']
     api_url = f"{UDM_API_URL_BASE}/imsi-{target_supi}/deregistrations"
     payload = {"deregisterReason": "UE_is_out_of_coverage"}
-
+    
     try:
         response = requests.post(api_url, headers=headers, data=json.dumps(payload), timeout=5)
         if response.status_code == 204:
@@ -52,9 +52,6 @@ def test_supi_manipulation():
             print(f"[-] Resposta inesperada. Status: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"[-] Erro ao tentar manipular o SUPI: {e}")
-    
-    print("\n[+] Teste de Sinalização (Conceitual)")
-    print("[*] A implementação real de manipulação de sinalização exige ferramentas específicas como Scapy com plugins 5G.")
 
 if __name__ == "__main__":
-    test_supi_manipulation()
+    test_data_integrity()
