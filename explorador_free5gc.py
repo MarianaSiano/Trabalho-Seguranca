@@ -4,6 +4,7 @@ import ssl
 import subprocess
 import urllib3
 import matplotlib.pyplot as plt
+import re
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -16,10 +17,10 @@ NF_CONFIG = {
     "SUPI_2": "208930000000002"
 }
 
-#A2 - Cryptographic Failures
+#A2 - Criptografia
 def test_cryptographic_failures():
     print("=" * 50)
-    print("A2 - Testando Cryptografic Failures")
+    print("A2 - Testando Criptografia")
     print("=" * 50)
 
     http_insecure, tls_weak = 0, 0
@@ -28,7 +29,7 @@ def test_cryptographic_failures():
         http_insecure = 1
     return http_insecure, tls_weak
 
-#A9 - Logging
+#A9 - Logs
 def test_logging():
     print("=" * 50)
     print("A9 - Testando Logs")
@@ -43,7 +44,7 @@ def test_logging():
             requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/api/invalid_endpoint", json={}, timeout=1)
             endpoint_invalid += 1
     except Exception as e:
-        print("Erro: ", e)
+        print("Erro:", e)
     return login_fails, endpoint_invalid
 
 #Segmentação
@@ -62,6 +63,7 @@ def test_network_slicing():
     interslice_tcp, bypass_auth = 0, 0
     try:
         socket.create_connection((NF_CONFIG['UDM_IP'], NF_CONFIG['UDM_PORT']), timeout=3).close()
+        print("[!!!] Conexão TCP entre slices permitida!")
         interslice_tcp = 1
     except:
         pass
@@ -75,42 +77,50 @@ def test_network_slicing():
             bypass_auth = 1
     return interslice_tcp, bypass_auth
 
-# ========== PING ==========
-def test_ping(target):
+#======== Ping ========
+def test_ping_with_latency(target):
     print(f"==== PING para {target} ====")
-
     try:
-        result = subprocess.run(["ping", "-c", "4", target], capture_output=True, text=True)
+        #Modo detalhado - mostra cada pacote
+        result = subprocess.run(["ping", "-c", "4", "-v", target], capture_output=True, text=True)
         print(result.stdout)
-        if "0% packet loss" not in result.stdout:
-            return 1  #Perda detectada
+
+        packet_loss_match = re.search(r"(\d+)% packet loss", result.stdout)
+        packet_loss = int(packet_loss_match.group(1)) if packet_loss_match else 100
+
+        latency_match = re.search(r"= [\d\.]+/[\d\.]+/([\d\.]+)/", result.stdout)
+        avg_latency = float(latency_match.group(1)) if latency_match else None
+
+        print(f"[INFO] Perda: {packet_loss}%  |  Latência média: {avg_latency} ms")
+        return (1 if packet_loss > 0 else 0), avg_latency
     except Exception as e:
         print("Erro no ping:", e)
-    return 0
+        return 1, None
 
-#========== HPING3 ==========
+#======== HPING3 ========
 def test_hping3(target):
     print(f"==== HPING3 SYN scan em {target} ====")
     try:
-        result = subprocess.run(["hping3", "-S", "-p", str(NF_CONFIG['NRF_PORT']), "-c", "5", target],
-                                capture_output=True, text=True)
+        #Modo detalhado
+        result = subprocess.run(["hping3", "-S", "-V", "-p", str(NF_CONFIG['NRF_PORT']), "-c", "5", target], capture_output=True, text=True)
         print(result.stdout)
-        return 1  #Se executou, consideramos evento detectável
+        return 1
     except FileNotFoundError:
         print("hping3 não está instalado.")
     return 0
 
-#========== IDS SIMULAÇÃO ==========
+#======== IDS Simulação ========
 def simulate_ids_traffic(target):
-    print(f"==== Simulação de tráfego suspeito para IDS ({target}) ====")
+    print(f"==== Simulação IDS flood para {target} ====")
     try:
-        subprocess.run(["hping3", "--flood", "-p", str(NF_CONFIG['NRF_PORT']), target], capture_output=True, text=True, timeout=5)
+        subprocess.run(["hping3", "--flood", "-V", "-p", str(NF_CONFIG['NRF_PORT']), target], capture_output=True, text=True, timeout=5)
+        print("[INFO] Flood enviado por 5 segundos.")
         return 1
     except Exception as e:
         print("Erro na simulação IDS:", e)
     return 0
 
-#========== GRÁFICO ==========
+#======== Gráfico ========
 def gerar_grafico_linha(resultados):
     categorias = [
         "HTTP não seguro", "TLS fraco",
@@ -124,13 +134,18 @@ def gerar_grafico_linha(resultados):
     plt.xticks(rotation=30)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("grafico_vulnerabilidades_avancado.png")
+    plt.savefig("grafico_vulnerabilidades_verbose.png")
     plt.show()
 
 if __name__ == "__main__":
     r1, r2 = test_cryptographic_failures()
     r3, r4 = test_logging()
     r5, r6 = test_network_slicing()
+    lat_nrf = test_ping_with_latency(NF_CONFIG['NRF_IP'])
+    lat_udm = test_ping_with_latency(NF_CONFIG['UDM_IP'])
+
+    print(f"\n📊 Latência média NRF: {lat_nrf} ms")
+    print(f"📊 Latência média UDM: {lat_udm} ms\n")
 
     resultados = [r1, r2, r3, r4, r5, r6]
     gerar_grafico_linha(resultados)
