@@ -74,3 +74,38 @@ def test_network_slicing():
         if r.status_code in [200, 201]:
             bypass_auth = 1
     return interslice_tcp, bypass_auth
+
+# ========== PING ==========
+def test_ping(target):
+    print(f"==== PING para {target} ====")
+
+    try:
+        result = subprocess.run(["ping", "-c", "4", target], capture_output=True, text=True)
+        print(result.stdout)
+        if "0% packet loss" not in result.stdout:
+            return 1  #Perda detectada
+    except Exception as e:
+        print("Erro no ping:", e)
+    return 0
+
+#========== HPING3 ==========
+def test_hping3(target):
+    print(f"==== HPING3 SYN scan em {target} ====")
+    try:
+        result = subprocess.run(["hping3", "-S", "-p", str(NF_CONFIG['NRF_PORT']), "-c", "5", target],
+                                capture_output=True, text=True)
+        print(result.stdout)
+        return 1  #Se executou, consideramos evento detectável
+    except FileNotFoundError:
+        print("hping3 não está instalado.")
+    return 0
+
+#========== IDS SIMULAÇÃO ==========
+def simulate_ids_traffic(target):
+    print(f"==== Simulação de tráfego suspeito para IDS ({target}) ====")
+    try:
+        subprocess.run(["hping3", "--flood", "-p", str(NF_CONFIG['NRF_PORT']), target], capture_output=True, text=True, timeout=5)
+        return 1
+    except Exception as e:
+        print("Erro na simulação IDS:", e)
+    return 0
