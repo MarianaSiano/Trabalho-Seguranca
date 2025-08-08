@@ -109,3 +109,28 @@ def simulate_ids_traffic(target):
     except Exception as e:
         print("Erro na simulação IDS:", e)
     return 0
+
+#========== GRÁFICO ==========
+def gerar_grafico_linha(resultados):
+    categorias = [
+        "HTTP não seguro", "TLS fraco",
+        "Login inválido", "Endpoint inválido",
+        "Conexão inter-slice", "Bypass autorização",
+    ]
+
+    plt.plot(categorias, resultados, marker='o', linestyle='-', color='blue')
+    plt.title("Exploração de Vulnerabilidades no free5GC")
+    plt.ylabel("Ocorrências Detectadas")
+    plt.xticks(rotation=30)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("grafico_vulnerabilidades_avancado.png")
+    plt.show()
+
+if __name__ == "__main__":
+    r1, r2 = test_cryptographic_failures()
+    r3, r4 = test_logging()
+    r5, r6 = test_network_slicing()
+
+    resultados = [r1, r2, r3, r4, r5, r6]
+    gerar_grafico_linha(resultados)
