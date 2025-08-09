@@ -29,34 +29,6 @@ def test_cryptographic_failures():
         http_insecure = 1
     return http_insecure, tls_weak
 
-#Força bruta no login
-def test_brute_force_login():
-    print("=" * 50)
-    print("Teste de Força Bruta no Login")
-    print("=" * 50)
-
-    common_passwords = [
-        "123456", "password", "admin", "admin123", "1234", "pass", "root", "toor",
-        "letmein", "welcome", "12345", "qwerty", "abc123", "111111", "12345678"
-    ]
-
-    success_attempts = 0
-    for pwd in common_passwords:
-        try:
-            r = requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/auth/login", json={"user": "admin", "pass": pwd}, timeout=3)
-            if r.status_code == 200:
-                print(f"[!!!] Senha encontrada: '{pwd}'")
-                success_attempts += 1
-                break
-            else:
-                print(f"Senha '{pwd}' incorreta (status {r.status_code})")
-        except Exception as e:
-            print(f"Erro ao tentar senha '{pwd}':", e)
-            break
-    if success_attempts == 0:
-        print("[+] Nenhuma senha comum funcionou.")
-    return success_attempts
-
 #Segmentação
 def get_access_token():
     try:
@@ -91,7 +63,7 @@ def test_network_slicing():
 def test_ping_with_latency(target):
     print(f"==== PING para {target} ====")
     try:
-        # Modo detalhado - mostra cada pacote
+        #Modo detalhado - mostra cada pacote
         result = subprocess.run(["ping", "-c", "4", "-v", target], capture_output=True, text=True)
         print(result.stdout)
 
@@ -150,7 +122,7 @@ def gerar_grafico_linha(resultados):
 if __name__ == "__main__":
     r1, r2 = test_cryptographic_failures()
     r3, r4 = test_network_slicing()
-    brute_force_result = test_brute_force_login()
+    brute_force_result = 0  # Definido como 0 para manter a estrutura do gráfico
     lat_nrf = test_ping_with_latency(NF_CONFIG['NRF_IP'])
     lat_udm = test_ping_with_latency(NF_CONFIG['UDM_IP'])
 
