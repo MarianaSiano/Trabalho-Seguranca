@@ -29,24 +29,6 @@ def test_cryptographic_failures():
         http_insecure = 1
     return http_insecure, tls_weak
 
-# A09 - Logs
-def test_logging():
-    print("=" * 50)
-    print("A9 - Testando Logs")
-    print("=" * 50)
-
-    login_fails, endpoint_invalid = 0, 0
-    try:
-        for _ in range(3):
-            requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/auth/login", json={"user": "admin", "pass": "bad"}, timeout=2)
-            login_fails += 1
-        for _ in range(10):
-            requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/api/invalid_endpoint", json={}, timeout=1)
-            endpoint_invalid += 1
-    except Exception as e:
-        print("Erro:", e)
-    return login_fails, endpoint_invalid
-
 #Força bruta no login
 def test_brute_force_login():
     print("=" * 50)
@@ -75,7 +57,7 @@ def test_brute_force_login():
         print("[+] Nenhuma senha comum funcionou.")
     return success_attempts
 
-# Segmentação
+#Segmentação
 def get_access_token():
     try:
         r = requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/nnrf-nfm/v1/oauth2/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data="grant_type=client_credentials&client_id=NSSF", timeout=5)
@@ -167,8 +149,7 @@ def gerar_grafico_linha(resultados):
 
 if __name__ == "__main__":
     r1, r2 = test_cryptographic_failures()
-    r3, r4 = test_logging()
-    r5, r6 = test_network_slicing()
+    r3, r4 = test_network_slicing()
     brute_force_result = test_brute_force_login()
     lat_nrf = test_ping_with_latency(NF_CONFIG['NRF_IP'])
     lat_udm = test_ping_with_latency(NF_CONFIG['UDM_IP'])
@@ -176,5 +157,5 @@ if __name__ == "__main__":
     print(f"\n📊 Latência média NRF: {lat_nrf} ms")
     print(f"📊 Latência média UDM: {lat_udm} ms\n")
 
-    resultados = [r1, r2, r3, r4, r5, r6]
+    resultados = [r1, r2, r3, r4]
     gerar_grafico_linha(resultados)
