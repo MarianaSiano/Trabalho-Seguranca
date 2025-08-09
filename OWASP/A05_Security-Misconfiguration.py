@@ -19,7 +19,6 @@ def test_infra_config():
         trivy_command = ["trivy", "image", "-f", "json", NF_CONFIG['IMAGE_AMF']]
         result = subprocess.run(trivy_command, capture_output=True, text=True, check=True, timeout=120)
         scan_results = json.loads(result.stdout)
-        
         if any(res.get("Vulnerabilities") for res in scan_results.get("Results", [])):
             print("[!!!] VULNERABILIDADE DE IMAGEM DETECTADA! Veja o log do Trivy para detalhes.")
         else:

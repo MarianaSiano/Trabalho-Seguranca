@@ -3,7 +3,7 @@ import urllib3
 import json
 import time
 
-#--- Configurações de Ambiente (Valores da sua configuração) ---
+#--- Configurações de Ambiente (Valores da configuração) ---
 NF_CONFIG = {
     "NEF_IP": "127.0.0.1",
     "NEF_PORT": 29509

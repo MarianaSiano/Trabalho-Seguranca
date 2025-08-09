@@ -4,7 +4,7 @@ import os
 
 def test_supply_chain():
     print("=" * 50)
-    print("A05 - Testando Components with Know Vulnerabilities")
+    print("A06 - Testando Components with Know Vulnerabilities")
     print("=" * 50)
 
     free5gc_dir = os.path.expanduser("~/go/pkg/mod/github.com/free5gc")

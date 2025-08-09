@@ -35,7 +35,7 @@ def test_authentication_failures():
     print("=" * 50)
     print("A07: Testando Identification and Authentication Failures")
     print("=" * 50)
-    
+
     #--- Teste 1: Bypass de Autenticação (BOLA) ---
     print("\n[+] Testando Bypass de Autenticação...")
     token = get_access_token()

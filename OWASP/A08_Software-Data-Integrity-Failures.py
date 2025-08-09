@@ -31,17 +31,17 @@ def test_data_integrity():
     print("=" * 50)
     print("A08: Testando Data Integrity Failures and Forgery")
     print("=" * 50)
-    
+
     token = get_access_token()
     if not token:
         print("[-] Não foi possível obter o token para o teste.")
         return
-        
+
     headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
     target_supi = NF_CONFIG['SUPI_2']
     api_url = f"{UDM_API_URL_BASE}/imsi-{target_supi}/deregistrations"
     payload = {"deregisterReason": "UE_is_out_of_coverage"}
-    
+
     try:
         response = requests.post(api_url, headers=headers, data=json.dumps(payload), timeout=5)
         if response.status_code == 204:

@@ -30,7 +30,6 @@ def test_injection():
         len_control = len(response_control.text)
         response_true = requests.post(nf_api_url_sqli, headers=headers, data=json.dumps({target_param: f"'{NF_CONFIG['SUPI_1']}' OR 1=1 --"}), timeout=5)
         len_true = len(response_true.text)
-        
         if len_true > len_control:
             print("[!!!] SQL Injection (Boolean-based) detectada! A API é vulnerável.")
         else:
