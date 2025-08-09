@@ -157,5 +157,5 @@ if __name__ == "__main__":
     print(f"\n📊 Latência média NRF: {lat_nrf} ms")
     print(f"📊 Latência média UDM: {lat_udm} ms\n")
 
-    resultados = [r1, r2, r3, r4]
+    resultados = [r1, r2, brute_force_result, 0, r3, r4]
     gerar_grafico_linha(resultados)
