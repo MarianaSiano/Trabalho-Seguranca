@@ -144,7 +144,7 @@ def gerar_grafico_linha(resultados):
     plt.xticks(rotation=30)
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig("grafico_vulnerabilidades_verbose.png")
+    plt.savefig("grafico_vulnerabilidades.png")
     plt.show()
 
 if __name__ == "__main__":
