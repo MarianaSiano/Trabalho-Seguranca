@@ -17,7 +17,7 @@ NF_CONFIG = {
     "SUPI_2": "208930000000002"
 }
 
-#A2 - Criptografia
+#A02 - Criptografia
 def test_cryptographic_failures():
     print("=" * 50)
     print("A2 - Testando Criptografia")
@@ -29,7 +29,7 @@ def test_cryptographic_failures():
         http_insecure = 1
     return http_insecure, tls_weak
 
-#A9 - Logs
+#A09 - Logs
 def test_logging():
     print("=" * 50)
     print("A9 - Testando Logs")
