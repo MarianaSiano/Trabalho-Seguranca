@@ -17,7 +17,7 @@ NF_CONFIG = {
     "SUPI_2": "208930000000002"
 }
 
-#A02 - Criptografia
+# A02 - Criptografia
 def test_cryptographic_failures():
     print("=" * 50)
     print("A2 - Testando Criptografia")
@@ -29,7 +29,7 @@ def test_cryptographic_failures():
         http_insecure = 1
     return http_insecure, tls_weak
 
-#A09 - Logs
+# A09 - Logs
 def test_logging():
     print("=" * 50)
     print("A9 - Testando Logs")
@@ -47,7 +47,35 @@ def test_logging():
         print("Erro:", e)
     return login_fails, endpoint_invalid
 
-#Segmentação
+#Força bruta no login
+def test_brute_force_login():
+    print("=" * 50)
+    print("Teste de Força Bruta no Login")
+    print("=" * 50)
+
+    common_passwords = [
+        "123456", "password", "admin", "admin123", "1234", "pass", "root", "toor",
+        "letmein", "welcome", "12345", "qwerty", "abc123", "111111", "12345678"
+    ]
+
+    success_attempts = 0
+    for pwd in common_passwords:
+        try:
+            r = requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/auth/login", json={"user": "admin", "pass": pwd}, timeout=3)
+            if r.status_code == 200:
+                print(f"[!!!] Senha encontrada: '{pwd}'")
+                success_attempts += 1
+                break
+            else:
+                print(f"Senha '{pwd}' incorreta (status {r.status_code})")
+        except Exception as e:
+            print(f"Erro ao tentar senha '{pwd}':", e)
+            break
+    if success_attempts == 0:
+        print("[+] Nenhuma senha comum funcionou.")
+    return success_attempts
+
+# Segmentação
 def get_access_token():
     try:
         r = requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/nnrf-nfm/v1/oauth2/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data="grant_type=client_credentials&client_id=NSSF", timeout=5)
@@ -81,7 +109,7 @@ def test_network_slicing():
 def test_ping_with_latency(target):
     print(f"==== PING para {target} ====")
     try:
-        #Modo detalhado - mostra cada pacote
+        # Modo detalhado - mostra cada pacote
         result = subprocess.run(["ping", "-c", "4", "-v", target], capture_output=True, text=True)
         print(result.stdout)
 
@@ -141,6 +169,7 @@ if __name__ == "__main__":
     r1, r2 = test_cryptographic_failures()
     r3, r4 = test_logging()
     r5, r6 = test_network_slicing()
+    brute_force_result = test_brute_force_login()
     lat_nrf = test_ping_with_latency(NF_CONFIG['NRF_IP'])
     lat_udm = test_ping_with_latency(NF_CONFIG['UDM_IP'])
 
