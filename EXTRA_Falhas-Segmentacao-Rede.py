@@ -1,67 +1,171 @@
 import requests
-import urllib3
-import json
 import socket
-import time
+import ssl
+import subprocess
+import urllib3
+import matplotlib.pyplot as plt
+import re
 
-#--- Configurações de Ambiente (Valores do nrfcfg.yaml e udmcfg.yaml)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 NF_CONFIG = {
     "NRF_IP": "127.0.0.10",
     "NRF_PORT": 8000,
+    "NRF_SCHEME": "http",
     "UDM_IP": "127.0.0.3",
     "UDM_PORT": 8000,
     "SUPI_2": "208930000000002"
 }
 
-UDM_API_URL_BASE = f"http://{NF_CONFIG['UDM_IP']}:{NF_CONFIG['UDM_PORT']}/nudm-uecm/v1/ues"
+# A02 - Criptografia
+def test_cryptographic_failures():
+    print("=" * 50)
+    print("A2 - Testando Criptografia")
+    print("=" * 50)
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    http_insecure, tls_weak = 0, 0
+    if NF_CONFIG["NRF_SCHEME"] == "http":
+        print("[!!!] HTTP inseguro em uso.")
+        http_insecure = 1
+    return http_insecure, tls_weak
 
+#Força bruta para A02 - Cryptographic Failures
+def brute_force_cryptographic_failures():
+    print("=" * 50)
+    print("Força Bruta em A02 - Cryptographic Failures")
+    print("=" * 50)
+
+    results = 0
+    test_protocols = ["http", "https"]
+    for proto in test_protocols:
+        url = f"{proto}://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}"
+        try:
+            r = requests.get(url, timeout=3, verify=False)
+            if proto == "http":
+                print(f"[!!!] HTTP inseguro detectado via força bruta em {url}")
+                results += 1
+        except Exception as e:
+            print(f"Erro ao testar {url}: {e}")
+    return results
+
+#Segmentação
 def get_access_token():
-    """Tenta obter um token de acesso de uma NF."""
-    auth_url = f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/nnrf-nfm/v1/oauth2/token"
-    auth_headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    auth_data = "grant_type=client_credentials&client_id=NSSF"
     try:
-        response = requests.post(auth_url, headers=auth_headers, data=auth_data, timeout=5)
-        response.raise_for_status()
-        return response.json().get("access_token")
-    except (requests.exceptions.RequestException, KeyError) as e:
+        r = requests.post(f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/nnrf-nfm/v1/oauth2/token", headers={"Content-Type": "application/x-www-form-urlencoded"}, data="grant_type=client_credentials&client_id=NSSF", timeout=5)
+        return r.json().get("access_token")
+    except:
         return None
 
 def test_network_slicing():
     print("=" * 50)
-    print("Testando Falhas de Segmentação de Rede (Network Slicing)")
+    print("Segmentação de Rede")
     print("=" * 50)
 
-    #Exemplo com IPs diferentes, mas no mesmo host de loopback para simular slices.
-    slice_a_ip = NF_CONFIG['NRF_IP']
-    slice_b_ip = NF_CONFIG['UDM_IP']
-    slice_b_port = NF_CONFIG['UDM_PORT']
-
+    interslice_tcp, bypass_auth = 0, 0
     try:
-        socket.create_connection((slice_b_ip, slice_b_port), timeout=3).close()
-        print(f"[!!!] VULNERABILIDADE DETECTADA: Um host na Slice A pode se conectar à Slice B.")
-    except (socket.timeout, socket.error):
-        print("[+] Conexão TCP para a Slice B falhou. A segmentação de rede parece correta.")
+        socket.create_connection((NF_CONFIG['UDM_IP'], NF_CONFIG['UDM_PORT']), timeout=3).close()
+        print("[!!!] Conexão TCP entre slices permitida!")
+        interslice_tcp = 1
+    except:
+        pass
 
     token = get_access_token()
-    if not token:
-        print("[-] Não foi possível obter o token para o teste de bypass")
-        return
-    headers = {"Authorization": f"Bearer {token}"}
-    other_supi_url = f"{UDM_API_URL_BASE}/imsi-{NF_CONFIG['SUPI_2']}/authentications"
-    
+    if token:
+        r = requests.get(
+            f"http://{NF_CONFIG['UDM_IP']}:{NF_CONFIG['UDM_PORT']}/nudm-uecm/v1/ues/imsi-{NF_CONFIG['SUPI_2']}/authentications",
+            headers={"Authorization": f"Bearer {token}"}, timeout=5)
+        if r.status_code in [200, 201]:
+            bypass_auth = 1
+    return interslice_tcp, bypass_auth
+
+#Força bruta para Segmentação de Rede (testar conexões TCP em múltiplas portas)
+def brute_force_network_slicing():
+    print("=" * 50)
+    print("Força Bruta em Segmentação de Rede")
+    print("=" * 50)
+
+    success = 0
+    #Testar portas num intervalo próximo da porta padrão
+    for port in range(NF_CONFIG['UDM_PORT'], NF_CONFIG['UDM_PORT'] + 5):
+        try:
+            socket.create_connection((NF_CONFIG['UDM_IP'], port), timeout=2).close()
+            print(f"[!!!] Conexão TCP aberta na porta {port} - potencial falha de segmentação")
+            success += 1
+        except:
+            print(f"Porta {port} fechada ou inacessível.")
+    return success
+
+#======== Ping ========
+def test_ping_with_latency(target):
+    print(f"==== PING para {target} ====")
     try:
-        response = requests.get(other_supi_url, headers=headers, timeout=5)
-        if response.status_code in [200, 201]:
-            print("[!!!] VULNERABILIDADE DETECTADA: Bypass de autorização inter-slice!")
-        elif response.status_code in [401, 403]:
-            print("[+] Bypass de autorização falhou (acesso negado).")
-        else:
-            print(f"[-] Resposta inesperada. Status: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        print(f"[-] Erro ao tentar acessar a API da Slice B: {e}")
+        result = subprocess.run(["ping", "-c", "4", "-v", target], capture_output=True, text=True)
+        print(result.stdout)
+
+        packet_loss_match = re.search(r"(\d+)% packet loss", result.stdout)
+        packet_loss = int(packet_loss_match.group(1)) if packet_loss_match else 100
+
+        latency_match = re.search(r"= [\d\.]+/[\d\.]+/([\d\.]+)/", result.stdout)
+        avg_latency = float(latency_match.group(1)) if latency_match else None
+
+        print(f"[INFO] Perda: {packet_loss}%  |  Latência média: {avg_latency} ms")
+        return (1 if packet_loss > 0 else 0), avg_latency
+    except Exception as e:
+        print("Erro no ping:", e)
+        return 1, None
+
+#======== HPING3 ========
+def test_hping3(target):
+    print(f"==== HPING3 SYN scan em {target} ====")
+    try:
+        result = subprocess.run(["hping3", "-S", "-V", "-p", str(NF_CONFIG['NRF_PORT']), "-c", "5", target], capture_output=True, text=True)
+        print(result.stdout)
+        return 1
+    except FileNotFoundError:
+        print("hping3 não está instalado.")
+    return 0
+
+#======== IDS Simulação ========
+def simulate_ids_traffic(target):
+    print(f"==== Simulação IDS flood para {target} ====")
+    try:
+        subprocess.run(["hping3", "--flood", "-V", "-p", str(NF_CONFIG['NRF_PORT']), target], capture_output=True, text=True, timeout=5)
+        print("[INFO] Flood enviado por 5 segundos.")
+        return 1
+    except Exception as e:
+        print("Erro na simulação IDS:", e)
+    return 0
+
+#======== Gráfico ========
+def gerar_grafico_linha(resultados):
+    categorias = [
+        "HTTP não seguro", "TLS fraco",
+        "Criptografia Força Bruta", "Login inválido", "Endpoint inválido",
+        "Conexão inter-slice", "Bypass autorização",
+        "Segmentação Força Bruta"
+    ]
+
+    plt.plot(categorias, resultados, marker='o', linestyle='-', color='blue')
+    plt.title("Exploração de Vulnerabilidades no free5GC")
+    plt.ylabel("Ocorrências Detectadas")
+    plt.xticks(rotation=30)
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig("grafico_vulnerabilidades.png")
+    plt.show()
 
 if __name__ == "__main__":
-    test_network_slicing()
+    r1, r2 = test_cryptographic_failures()
+    r3, r4 = test_network_slicing()
+    bf_crypt = brute_force_cryptographic_failures()
+    bf_segment = brute_force_network_slicing()
+
+    #Testes adicionais para ping e etc, pode incluir se quiser:
+    lat_nrf = test_ping_with_latency(NF_CONFIG['NRF_IP'])
+    lat_udm = test_ping_with_latency(NF_CONFIG['UDM_IP'])
+
+    print(f"\n📊 Latência média NRF: {lat_nrf} ms")
+    print(f"📊 Latência média UDM: {lat_udm} ms\n")
+
+    resultados = [r1, r2, bf_crypt, 0, 0, r3, r4, bf_segment]
+    gerar_grafico_linha(resultados)
