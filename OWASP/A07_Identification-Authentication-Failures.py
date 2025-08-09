@@ -33,7 +33,7 @@ def get_access_token():
 
 def test_authentication_failures():
     print("=" * 50)
-    print("A7: Testando Falhas de Identificação e Autenticação")
+    print("A07: Testando Identification and Authentication Failures")
     print("=" * 50)
     
     #--- Teste 1: Bypass de Autenticação (BOLA) ---
@@ -59,7 +59,7 @@ def test_authentication_failures():
         print(f"[-] Erro ao se conectar à API para teste de autenticação: {e}")
 
     #--- Teste 2: Negação de Serviço (DoS) ---
-    print("\n[+] Testando Negação de Serviço (DoS) no UDM...")
+    print("\n[+] Testando Denial of Service (DoS) no UDM...")
 
     try:
         for _ in range(500):

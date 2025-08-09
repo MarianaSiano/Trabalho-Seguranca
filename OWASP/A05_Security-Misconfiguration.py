@@ -11,7 +11,7 @@ NF_CONFIG = {
 
 def test_infra_config():
     print("=" * 50)
-    print("A3: Testando Falhas de Configuração de Segurança")
+    print("A05 - Testando Security Configuration Failures")
     print("=" * 50)
 
     try:
@@ -43,7 +43,7 @@ def test_infra_config():
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"[-] Erro ao executar kubectl. Verifique se o pod e o namespace existem: {e}")
     except Exception as e:
-        print(f"[-] Erro inesperado no teste A3: {e}")
+        print(f"[-] Erro inesperado no teste A05: {e}")
 
 if __name__ == "__main__":
     test_infra_config()

@@ -1,13 +1,13 @@
 import requests
 import urllib3
-import json
 
-#--- Configurações de Ambiente (Valores da sua configuração) ---
+#--- Configurações de Ambiente ---
 NF_CONFIG = {
     "NRF_IP": "127.0.0.10",
     "NRF_PORT": 8000,
     "UDM_IP": "127.0.0.3",
     "UDM_PORT": 8000,
+    "SUPI_1": "208930000000001",
     "SUPI_2": "208930000000002"
 }
 
@@ -25,33 +25,34 @@ def get_access_token():
         response.raise_for_status()
         return response.json().get("access_token")
     except (requests.exceptions.RequestException, KeyError) as e:
+        print(f"[-] Erro ao obter token de acesso: {e}")
         return None
 
-def test_data_integrity():
+def test_broken_access_control():
     print("=" * 50)
-    print("A10: Testando Falhas de Integridade de Dados e Falsificação")
+    print("A01 - Testando Broken Access Control")
     print("=" * 50)
     
     token = get_access_token()
     if not token:
-        print("[-] Não foi possível obter o token para o teste.")
+        print("[-] Não foi possível obter o token, o teste não pode continuar.")
         return
-        
-    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}"}
-    target_supi = NF_CONFIG['SUPI_2']
-    api_url = f"{UDM_API_URL_BASE}/imsi-{target_supi}/deregistrations"
-    payload = {"deregisterReason": "UE_is_out_of_coverage"}
-    
+
+    headers = {"Authorization": f"Bearer {token}"}
+
+    #Tentando acessar dados de outro SUPI sem permissão
+    other_supi_url = f"{UDM_API_URL_BASE}/imsi-{NF_CONFIG['SUPI_2']}/authentications"
     try:
-        response = requests.post(api_url, headers=headers, data=json.dumps(payload), timeout=5)
-        if response.status_code == 204:
-            print("[!!!] VULNERABILIDADE DETECTADA: Manipulação de SUPI bem-sucedida!")
+        response = requests.get(other_supi_url, headers=headers, timeout=5)
+        if response.status_code in [200, 201]:
+            print("[!!!] VULNERABILIDADE DETECTADA: Broken Object Level Authorization!")
+            print("      O token de uma NF pode acessar dados de outro SUPI.")
         elif response.status_code in [401, 403]:
-            print("[+] Manipulação de SUPI falhou. Acesso foi negado.")
+            print("[+] Acesso negado. A API está protegida corretamente contra BOLA.")
         else:
             print(f"[-] Resposta inesperada. Status: {response.status_code}")
     except requests.exceptions.RequestException as e:
-        print(f"[-] Erro ao tentar manipular o SUPI: {e}")
+        print(f"[-] Erro ao se conectar à API para teste de controle de acesso: {e}")
 
 if __name__ == "__main__":
-    test_data_integrity()
+    test_broken_access_control()

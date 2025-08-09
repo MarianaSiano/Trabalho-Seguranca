@@ -4,7 +4,7 @@ import os
 
 def test_supply_chain():
     print("=" * 50)
-    print("A5 - Testando Components with Know Vulnerabilities")
+    print("A05 - Testando Components with Know Vulnerabilities")
     print("=" * 50)
 
     free5gc_dir = os.path.expanduser("~/go/pkg/mod/github.com/free5gc")
@@ -25,7 +25,7 @@ def test_supply_chain():
     except (subprocess.CalledProcessError, FileNotFoundError) as e:
         print(f"[-] Erro ao executar Trivy. Verifique se a ferramenta está instalada: {e}")
     except Exception as e:
-        print(f"[-] Erro inesperado no teste A5: {e}")
+        print(f"[-] Erro inesperado no teste A05: {e}")
 
 if __name__ == "__main__":
     test_supply_chain()

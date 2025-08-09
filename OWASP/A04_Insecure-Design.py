@@ -14,7 +14,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def test_insecure_design():
     print("=" * 50)
-    print("A4 - Testando Insecure Design")
+    print("A04 - Testando Insecure Design")
     print("=" * 50)
 
     if NF_CONFIG["NRF_SCHEME"] == "http":

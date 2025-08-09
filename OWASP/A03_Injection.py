@@ -17,7 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def test_injection():
     print("=" * 50)
-    print("A1 - Testando Injeção de Código (Injection)")
+    print("A03 - Testando Injeção de Código (Injection)")
     print("=" * 50)
 
     #Teste de SQL Injection (Boolean-based blind)
@@ -38,7 +38,7 @@ def test_injection():
     except requests.exceptions.RequestException as e:
         print(f"[-] Erro ao testar SQLi: {e}")
 
-    # Teste de Command Injection
+    #Teste de Command Injection
     nf_mgmt_url = f"http://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/management/ping"
     target_cmd_param = "host"
     headers = {"Content-Type": "application/json"}

@@ -12,7 +12,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def test_ssrf():
     print("=" * 50)
-    print("A8 -  Testando Request Forgery")
+    print("A10 -  Testando Request Forgery")
     print("=" * 50)
 
     nf_api_url = f"http://{NF_CONFIG['NEF_IP']}:{NF_CONFIG['NEF_PORT']}/api/resource_loader" 
@@ -29,7 +29,6 @@ def test_ssrf():
             start_time = time.time()
             response = requests.post(nf_api_url, json={target_param: url}, timeout=5)
             end_time = time.time()
-            
             if response.status_code == 200 and "security-credentials" in response.text:
                 print("[!!!] VULNERABILIDADE SSRF DETECTADA! Acesso a metadados de nuvem.")
                 vulnerable_found = True
@@ -41,7 +40,7 @@ def test_ssrf():
 
         except requests.exceptions.RequestException as e:
             pass
-    
+
     if not vulnerable_found:
         print("[+] SSRF não detectado com payloads de teste.")
 

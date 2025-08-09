@@ -11,7 +11,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def test_logging():
     print("=" * 50)
-    print("A9 - Testando Insufficient Monitoring and Logging")
+    print("A09 - Testando Insufficient Monitoring and Logging")
     print("=" * 50)
     
     nf_invalid_url = f"http://{NF_CONFIG['NRF_IP']}:{NF_CONFIG['NRF_PORT']}/api/invalid_endpoint"
